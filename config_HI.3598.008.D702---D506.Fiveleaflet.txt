@@ -1,0 +1,38 @@
+Project:
+-----------------------
+Project name          = HI.3598.008.D702---D506.Fiveleaflet
+Type                  = chloro
+Genome Range          = 120000-200000
+K-mer                 = 29
+Max memory            = 40
+Extended log          = 1
+Save assembled reads  = no
+Seed Input            = G_max_seed_atpA.fasta
+Extend seed directly  = no
+Reference sequence    = Glycine_max.fasta
+Variance detection    = 
+Chloroplast sequence  = 
+
+Dataset 1:
+-----------------------
+Read Length           = 151
+Insert size           = 300
+Platform              = illumina
+Single/Paired         = PE
+Combined reads        = 
+Forward reads         = trimmedReads/HI.3598.008.D702---D506.Fiveleaflet_R1P.fastq
+Reverse reads         = trimmedReads/HI.3598.008.D702---D506.Fiveleaflet_R2P.fastq
+Store Hash            =
+
+Heteroplasmy:
+-----------------------
+MAF                   = 
+HP exclude list       = 
+PCR-free              = 
+
+Optional:
+-----------------------
+Insert size auto      = yes
+Use Quality Scores    = no
+Output path           = assembledGenome/
+
