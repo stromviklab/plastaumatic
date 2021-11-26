@@ -1,0 +1,38 @@
+Project:
+-----------------------
+Project name          = test
+Type                  = chloro
+Genome Range          = 120000-200000
+K-mer                 = 29
+Max memory            = max_memory
+Extended log          = 1
+Save assembled reads  = no
+Seed Input            = path_to_seed
+Extend seed directly  = no
+Reference sequence    = path_to_reference
+Variance detection    = 
+Chloroplast sequence  = 
+
+Dataset 1:
+-----------------------
+Read Length           = 151
+Insert size           = 300
+Platform              = illumina
+Single/Paired         = PE
+Combined reads        = 
+Forward reads         = each_dir/trimmedReads/read1
+Reverse reads         = each_dir/trimmedReads/read2
+Store Hash            =
+
+Heteroplasmy:
+-----------------------
+MAF                   = 
+HP exclude list       = 
+PCR-free              = 
+
+Optional:
+-----------------------
+Insert size auto      = yes
+Use Quality Scores    = no
+Output path           = each_dir/assembledGenome/
+
