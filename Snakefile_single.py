@@ -1,15 +1,10 @@
 wildcard_constraints:
     outcome="\d+"
 
-start1insert="{print $4}"
-end1insert="{print $5}"
-end2insert="{print $5}"
-
 OUTCOME= ["1","2"]
 
 rule all:
     input:
-        expand("WORKDIR/assembledGenome/QUAST_OUT_{outcome}_prefix/report.txt", outcome=OUTCOME),
         expand("WORKDIR/annotatedGenome/{outcome}_prefix_full.gb", outcome=OUTCOME)
         
 rule decompress:
@@ -94,8 +89,23 @@ rule PGA:
         echo "$(date): PGA for prefix is starting!"
         """
         """
-        perl path_to_PGA -r path_to_ref_gb -t WORKDIR/standardizedGenome -o WORKDIR/annotatedGenome
+        perl path_to_PGA -r path_to_ref_gb -t WORKDIR/standardizedGenome/ -o WORKDIR/annotatedGenome
         """
         """
         echo "$(date): PGA for prefix is finished!"
         """
+      
+rule ISC:
+    input:
+        fa="WORKDIR/standardizedGenome/{outcome}_prefix.standardized.fa",
+        gb="WORKDIR/annotatedGenome/{outcome}_prefix_full.gb"
+    output:
+        out="WORKDIR/annotatedGenome/{outcome}_check_stop_codons.txt"
+        
+    shell:
+        
+        """
+        sh check_internal_stops.sh {input.gb} {input.fa} > {output.out}
+        """
+
+
