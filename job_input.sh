@@ -20,15 +20,15 @@ WORKDIR=$(pwd)
 read1_novo=${WORKDIR}/trimmedReads/forward_readP.fastq
 read2_novo=${WORKDIR}/trimmedReads/reverse_readP.fastq
 
-cat ${config_base} |sed "s|WORKDIR|$WORKDIR|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
+cat ${path_to_repo}/config_novo.txt |sed "s|WORKDIR|$WORKDIR|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
 sed "s|path_to_seed|${seed}|" |sed "s|path_to_reference|${ref_fasta}|" |\
 sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}_config.txt
 
 if [ $(echo "${read1##*.}") == "gz" ]
 then 
-cat ${snakefile_base} > _tmp.${prefix}_snakefile.py
+cat ${path_to_repo}/Snakefile_single.py > _tmp.${prefix}_snakefile.py
 else 
-cat ${snakefile_base}|sed "/rule decompress/,/rule trimmomatic/{//p;d;}"|grep -v "rule decompress"| \
+cat ${path_to_repo}/Snakefile_single.py |sed "/rule decompress/,/rule trimmomatic/{//p;d;}"|grep -v "rule decompress"| \
 sed "s|WORKDIR/reads/forward_read.fastq|read1|g" |sed "s|WORKDIR/reads/reverse_read.fastq|read2|g" > _tmp.${prefix}_snakefile.py
 fi
 
