@@ -5,7 +5,7 @@ OUTCOME= ["1","2"]
 
 rule all:
     input:
-        expand("WORKDIR/annotatedGenome/{outcome}_prefix_full.gb", outcome=OUTCOME)
+        expand("WORKDIR/annotatedGenome/Option_{outcome}_check_stop_codons.txt", outcome=OUTCOME)
         
 rule decompress:
     input:
@@ -32,8 +32,8 @@ rule decompress:
 
 rule trimmomatic:
     input:
-        forward="WORKDIR/reads/forward_read.fastq",
-        reverse="WORKDIR/reads/reverse_read.fastq"
+        forward_read="WORKDIR/reads/forward_read.fastq",
+        reverse_read="WORKDIR/reads/reverse_read.fastq"
     output:
         forwardPaired="WORKDIR/trimmedReads/forward_readP.fastq",
         reversePaired="WORKDIR/trimmedReads/reverse_readP.fastq", 
@@ -46,7 +46,7 @@ rule trimmomatic:
         echo "$(date): Trimmomatic for prefix is starting!"
         """
         """
-        java -jar path_to_trimmomatic PE -threads {threads} {input.forward} {input.reverse} {output.forwardPaired} {output.forwardUnPaired} {output.reversePaired} {output.reverseUnPaired} ILLUMINACLIP:$EBROOTTRIMMOMATIC/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:60
+        java -jar path_to_trimmomatic PE -threads {threads} {input.forward_read} {input.reverse_read} {output.forwardPaired} {output.forwardUnPaired} {output.reversePaired} {output.reverseUnPaired} ILLUMINACLIP:$EBROOTTRIMMOMATIC/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:60
         """
         """
         echo "$(date): Trimmomatic for prefix is finished!"
@@ -83,9 +83,9 @@ rule standardize:
 
 rule PGA:
     input:
-        full="WORKDIR/standardizedGenome/{outcome}_prefix.standardized.fa"
+        full="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa"
     output:
-        outfiles="WORKDIR/annotatedGenome/{outcome}_prefix_full.gb"
+        outfiles="WORKDIR/annotatedGenome/Option_{outcome}_prefix_full.gb"
     shell:
         """
         echo "$(date): PGA for prefix is starting!"
@@ -99,15 +99,11 @@ rule PGA:
       
 rule ISC:
     input:
-        fa="WORKDIR/standardizedGenome/{outcome}_prefix.standardized.fa",
-        gb="WORKDIR/annotatedGenome/{outcome}_prefix_full.gb"
+        fa="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa",
+        gb="WORKDIR/annotatedGenome/Option_{outcome}_prefix_full.gb"
     output:
-        out="WORKDIR/annotatedGenome/{outcome}_check_stop_codons.txt"
-        
+        out="WORKDIR/annotatedGenome/Option_{outcome}_check_stop_codons.txt"
     shell:
-        
         """
         path_to_repo/check_internal_stops.sh {input.gb} {input.fa} > {output.out}
         """
-
-
