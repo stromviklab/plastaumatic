@@ -22,6 +22,8 @@ rule decompress:
         """
         """
         pigz -d -p {threads} -k -c {input.compressed_forward} > {output.decompressed_forward}
+        """
+        """
         pigz -d -p {threads} -k -c {input.compressed_reverse} > {output.decompressed_reverse}
         """
         """
