@@ -76,7 +76,7 @@ rule standardize:
         standardized="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa",
     shell:
         """
-        standardize_cpDNA.sh -i {input.option}
+        path_to_repo/standardize_cpDNA.sh -i {input.option}
         """
 
 rule PGA:
@@ -105,7 +105,7 @@ rule ISC:
     shell:
         
         """
-        sh check_internal_stops.sh {input.gb} {input.fa} > {output.out}
+        path_to_repo/check_internal_stops.sh {input.gb} {input.fa} > {output.out}
         """
 
 
