@@ -36,7 +36,7 @@ cat _tmp.${prefix}_snakefile.py |sed "s|WORKDIR|$WORKDIR|g"|sed "s|read1|$read1|
 sed "s|read2|$read2|g" |sed "s|threads_available|$threads_available|" |sed "s|prefix|$prefix|g" |\
 sed "s|path_to_ref_fasta|${ref_fasta}|g" |sed "s|path_to_ref_gb|${ref_gb}|g" |\
 sed "s|path_to_trimmomatic|${path_to_trimmomatic}|g" |sed "s|path_to_novoplasty|${path_to_novoplasty}|g" |\
-sed "s|path_to_PGA|${path_to_PGA}|g"  > ${prefix}_snakefile.py
+sed "s|path_to_repo|${path_to_repo}|g"|sed "s|path_to_PGA|${path_to_PGA}|g"  > ${prefix}_snakefile.py
 
 rm _tmp.${prefix}_snakefile.py
 
