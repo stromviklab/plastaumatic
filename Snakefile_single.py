@@ -85,10 +85,12 @@ rule standardize:
 
 rule PGA:
     input:
-        full="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa"
+        full1="WORKDIR/standardizedGenome/Option_1_prefix.standardized.fa",
+        full2="WORKDIR/standardizedGenome/Option_2_prefix.standardized.fa"
     output:
-        outfiles="WORKDIR/annotatedGenome/Option_{outcome}_prefix_full.gb"
-    log: "WORKDIR/logs/PGA_{outcome}.log"
+        outfiles1="WORKDIR/annotatedGenome/Option_1_prefix.standardized.gb",
+        outfiles2="WORKDIR/annotatedGenome/Option_2_prefix.standardized.gb"
+    log: "WORKDIR/logs/PGA.log"
     shell:
         """
         echo "$(date): PGA for prefix is starting!"
@@ -103,10 +105,17 @@ rule PGA:
 rule ISC:
     input:
         fa="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa",
-        gb="WORKDIR/annotatedGenome/Option_{outcome}_prefix_full.gb"
+        gb="WORKDIR/annotatedGenome/Option_{outcome}_prefix.standardized.gb"
     output:
         out="WORKDIR/annotatedGenome/Option_{outcome}_check_stop_codons.txt"
     shell:
         """
+        echo "$(date): Cheking for internal stop codons"
+        """
+        """
         path_to_repo/check_internal_stops.sh {input.gb} {input.fa} > {output.out}
         """
+        """
+        echo "$(date): DONE: check the output in WORKDIR/annotatedGenome/"
+        """
+
