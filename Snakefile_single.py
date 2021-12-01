@@ -41,12 +41,13 @@ rule trimmomatic:
         reverseUnPaired="WORKDIR/trimmedReads/reverse_readU.fastq"
     threads:
         threads_available
+    log: "WORKDIR/logs/trimmomatic.log"
     shell:
         """
         echo "$(date): Trimmomatic for prefix is starting!"
         """
         """
-        java -jar path_to_trimmomatic PE -threads {threads} {input.forward_read} {input.reverse_read} {output.forwardPaired} {output.forwardUnPaired} {output.reversePaired} {output.reverseUnPaired} ILLUMINACLIP:$EBROOTTRIMMOMATIC/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:60
+        java -jar path_to_trimmomatic PE -threads {threads} {input.forward_read} {input.reverse_read} {output.forwardPaired} {output.forwardUnPaired} {output.reversePaired} {output.reverseUnPaired} ILLUMINACLIP:$EBROOTTRIMMOMATIC/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:60 &> {log}
         """
         """
         echo "$(date): Trimmomatic for prefix is finished!"
@@ -60,12 +61,13 @@ rule novoplasty:
     output:
         option1="WORKDIR/assembledGenome/Option_1_prefix.fasta",
         option2="WORKDIR/assembledGenome/Option_2_prefix.fasta"
+    log: "WORKDIR/logs/novoplasty.log"
     shell:
         """
         echo "$(date): NOVOPlasty for prefix is starting!"
         """
         """
-        perl path_to_novoplasty -c {input.config_novo}
+        perl path_to_novoplasty -c {input.config_novo} &> {log}
         """
         """
         echo "$(date): NOVOPlasty for prefix is finished!"
@@ -86,12 +88,13 @@ rule PGA:
         full="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa"
     output:
         outfiles="WORKDIR/annotatedGenome/Option_{outcome}_prefix_full.gb"
+    log: "WORKDIR/logs/PGA_{outcome}.log"
     shell:
         """
         echo "$(date): PGA for prefix is starting!"
         """
         """
-        perl path_to_PGA -r path_to_ref_gb -t WORKDIR/standardizedGenome/ -o WORKDIR/annotatedGenome
+        perl path_to_PGA -r path_to_ref_gb -t WORKDIR/standardizedGenome/ -o WORKDIR/annotatedGenome &> {log}
         """
         """
         echo "$(date): PGA for prefix is finished!"

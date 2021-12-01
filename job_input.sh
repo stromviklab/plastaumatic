@@ -14,7 +14,7 @@ else
   source $1
 
 mkdir ${prefix} && cd ${prefix}
-mkdir reads trimmedReads assembledGenome standardizedGenome annotatedGenome
+mkdir reads trimmedReads assembledGenome standardizedGenome annotatedGenome logs
 
 WORKDIR=$(pwd)
 read1_novo=${WORKDIR}/trimmedReads/forward_readP.fastq
@@ -42,5 +42,5 @@ rm _tmp.${prefix}_snakefile.py
 
 #running snakemake 
 snakemake --unlock
-snakemake -s ${prefix}_snakefile.py -j ${threads_available}
+snakemake -s ${prefix}_snakefile.py -j ${threads_available} -q
 fi
