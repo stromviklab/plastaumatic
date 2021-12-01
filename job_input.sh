@@ -14,7 +14,6 @@ else
   source $1
 
 mkdir ${prefix} && cd ${prefix}
-mkdir reads trimmedReads assembledGenome standardizedGenome annotatedGenome logs
 
 WORKDIR=$(pwd)
 read1_novo=${WORKDIR}/trimmedReads/forward_readP.fastq
