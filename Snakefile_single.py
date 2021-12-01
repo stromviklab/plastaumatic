@@ -80,7 +80,7 @@ rule standardize:
         standardized="WORKDIR/standardizedGenome/Option_{outcome}_prefix.standardized.fa",
     shell:
         """
-        path_to_repo/standardize_cpDNA.sh -i {input.option}
+        path_to_repo/standardize_cpDNA.sh -i {input.option} -o ${output.standardized}
         """
 
 rule PGA:
