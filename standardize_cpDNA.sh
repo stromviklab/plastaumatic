@@ -12,6 +12,7 @@ done
 samtools faidx ${fasta}
 seq_len=$(cut -f2 ${fasta}.fai)
 
+mkdir _tmp_$(basename $fasta) && cd _tmp_$(basename $fasta)
 # get the header 
 head -1 ${fasta} > header
 
@@ -123,3 +124,6 @@ else
 
 
 fi
+
+cd ../
+rm -r _tmp_$(basename $fasta)
