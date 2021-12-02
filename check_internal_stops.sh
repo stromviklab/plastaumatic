@@ -101,7 +101,7 @@ else
 fi
 rm translateDna.pl _list
 cd ../
-rm _tmp_$(basename $2)
+rm -r _tmp_$(basename $2)
 
 else 
   echo "input files do not exist"
