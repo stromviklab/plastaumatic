@@ -110,7 +110,7 @@ rule ISC:
         out="WORKDIR/annotatedGenome/Option_{outcome}_check_stop_codons.txt"
     shell:
         """
-        echo "$(date): Cheking for internal stop codons"
+        echo "$(date): Checking for internal stop codons"
         """
         """
         path_to_repo/check_internal_stops.sh {input.gb} {input.fa} > {output.out}
