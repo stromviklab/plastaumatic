@@ -9,7 +9,7 @@ fi
 
 if [ -f $1 ] && [ -f $2 ]
 then 
-
+mkdir _tmp_$(basename $2) && cd _tmp_$(basename $2)
 wget -q https://raw.githubusercontent.com/david-a-parry/translateDna/master/translateDna.pl
 
 samtools faidx $2
@@ -100,6 +100,8 @@ else
 
 fi
 rm translateDna.pl _list
+cd ../
+rm _tmp_$(basename $2)
 
 else 
   echo "input files do not exist"
