@@ -8,6 +8,10 @@ do
   esac
 done
 
+#check for non-actg characters in assemblies
+cat ./plastome_asm/${i}/Option_1_${i}.fasta |sed 1d|tr -d 'ACTG'|tr -d 'actg'|tr -d '\n'|wc -c
+
+
 # index the fasta input and get the sequence length
 samtools faidx ${fasta}
 seq_len=$(cut -f2 ${fasta}.fai)
