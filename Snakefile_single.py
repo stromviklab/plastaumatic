@@ -113,7 +113,7 @@ rule ISC:
         echo "$(date): Checking for internal stop codons"
         """
         """
-        path_to_repo/check_internal_stops.sh {input.gb} {input.fa} > {output.out}
+        WORKDIR/prefix_isc.sh {input.gb} {input.fa} > {output.out}
         """
         """
         echo "$(date): DONE: check the output in WORKDIR/annotatedGenome/"

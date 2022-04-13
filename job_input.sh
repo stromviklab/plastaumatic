@@ -39,6 +39,10 @@ sed "s|path_to_repo|${path_to_repo}|g"|sed "s|path_to_PGA|${path_to_PGA}|g"  > $
 
 rm _tmp.${prefix}_snakefile.py
 
+# modify the ISC script
+cat ${path_to_repo}/check_internal_stops.sh|sed "s|translateDna|${path_to_repo}/translateDna.pl|g" > ${prefix}_isc.sh 
+
+
 #running snakemake 
 snakemake --unlock
 snakemake -s ${prefix}_snakefile.py -j ${threads_available} -q
