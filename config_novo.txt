@@ -2,7 +2,7 @@ Project:
 -----------------------
 Project name          = test
 Type                  = chloro
-Genome Range          = 120000-200000
+Genome Range          = range
 K-mer                 = 29
 Max memory            = max_memory
 Extended log          = 1

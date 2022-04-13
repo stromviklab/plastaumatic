@@ -8,10 +8,6 @@ do
   esac
 done
 
-#check for non-actg characters in assemblies
-cat ./plastome_asm/${i}/Option_1_${i}.fasta |sed 1d|tr -d 'ACTG'|tr -d 'actg'|tr -d '\n'|wc -c
-
-
 # index the fasta input and get the sequence length
 samtools faidx ${fasta}
 seq_len=$(cut -f2 ${fasta}.fai)
@@ -73,13 +69,64 @@ if [ $(grep -c "^" _tmp.blast.out) -gt 2 ];then
       fi
 
 else 
-    # if the end of the sequence is there in the alignemnts, that means the fasta is already standardized
-    if [ "$(cat _tmp.blast.out| awk '$3=='$seq_len' {print "yes"}')" == "yes" ];then 
+    # if the end or start the sequence is there in the alignemnts, that means the IR locations needs to be adjusted
+    if [ "$(cat _tmp.blast.out| awk '$3=='$seq_len'||$2==1 {print "yes"}')" == "yes" ];then 
+      if [ "$(cat _tmp.blast.out| awk '$3=='$seq_len' {print "yes"}')" == "yes" ];then
+        if [ $(awk '$3=='$seq_len' {print $6}' _tmp.blast.out) -gt 50000 ];then
+          echo "$(date) : Standardizing the input fasta file"
+          sed ':a; $!N; /^>/!s/\n\([^>]\)/\1/; ta; P; D' ${fasta} > ${out}
+          rm _tmp.blast.out ${fasta}.fai header
+          echo "$(date) : Finished"
+        else 
+          echo "$(date) : Standardizing the input fasta file"
+          ira=$(cat _tmp.blast.out |awk '$3=='$seq_len' {print $1":"$2"-"$3}')
+          irb=$(cat _tmp.blast.out |awk '$3=='$seq_len' {print $1":"$6"-"$5}')
+          lsc=$(cat _tmp.blast.out |awk '$3=='$seq_len' {print $1":"$5+1"-"$2-1}')  
+          ssc=$(cat _tmp.blast.out |awk '$3=='$seq_len' {print $1":1-"$6-1}')  
 
-      rm _tmp.blast.out ${fasta}.fai header
-      cat ${fasta} > ${out}
-      echo "$(date) : The input fasta file is already standardized"
+          samtools faidx ${fasta} "$irb" |sed 1d > IRb.fa
+          samtools faidx ${fasta} "$ira" |sed 1d > IRa.fa 
+          samtools faidx ${fasta} "$ssc" |sed 1d > ssc.fa 
+          samtools faidx ${fasta} "$lsc" |sed 1d > lsc.fa 
 
+          cat header lsc.fa IRa.fa ssc.fa IRb.fa |sed ':a; $!N; /^>/!s/\n\([^>]\)/\1/; ta; P; D'> ${out}
+          rm _tmp.blast.out lsc.fa ssc.fa IRa.fa IRb.fa header ${fasta}.fai
+          echo "$(date) : Finished"
+        fi 
+      fi 
+      if [ "$(cat _tmp.blast.out| awk '$2==1 {print "yes"}')" == "yes" ];then
+        if [ $(cat _tmp.blast.out |awk '$2==1 {print '$seq_len'-$5}') -gt 50000 ];then 
+          echo "$(date) : Standardizing the input fasta file"
+          ira=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$2"-"$3}')
+          irb=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$6"-"$5}')
+          lsc=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$5+1"-"'$seq_len'}')  
+          ssc=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$3+1"-"$6-1}')  
+
+          samtools faidx ${fasta} "$irb" |sed 1d > IRb.fa
+          samtools faidx ${fasta} "$ira" |sed 1d > IRa.fa 
+          samtools faidx ${fasta} "$ssc" |sed 1d > ssc.fa 
+          samtools faidx ${fasta} "$lsc" |sed 1d > lsc.fa 
+
+          cat header lsc.fa IRa.fa ssc.fa IRb.fa |sed ':a; $!N; /^>/!s/\n\([^>]\)/\1/; ta; P; D'> ${out}
+          rm _tmp.blast.out lsc.fa ssc.fa IRa.fa IRb.fa header ${fasta}.fai
+          echo "$(date) : Finished"
+        else 
+          echo "$(date) : Standardizing the input fasta file"
+          irb=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$2"-"$3}')
+          ira=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$6"-"$5}')
+          ssc=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$5+1"-"'$seq_len'}')  
+          lsc=$(cat _tmp.blast.out |awk '$2==1 {print $1":"$3+1"-"$6-1}')  
+
+          samtools faidx ${fasta} "$irb" |sed 1d > IRb.fa
+          samtools faidx ${fasta} "$ira" |sed 1d > IRa.fa 
+          samtools faidx ${fasta} "$ssc" |sed 1d > ssc.fa 
+          samtools faidx ${fasta} "$lsc" |sed 1d > lsc.fa 
+
+          cat header lsc.fa IRa.fa ssc.fa IRb.fa |sed ':a; $!N; /^>/!s/\n\([^>]\)/\1/; ta; P; D'>${out}
+          rm _tmp.blast.out lsc.fa ssc.fa IRa.fa IRb.fa header ${fasta}.fai
+          echo "$(date) : Finished"
+        fi 
+      fi  
     else 
           # otherwise check if it is split at LSC or SSC
           echo "$(date) : Standardizing the input fasta file"
