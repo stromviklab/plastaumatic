@@ -1,12 +1,24 @@
 #!/bin/bash
 
-while getopts 'i:o:' options
+while getopts 'd:o:p:' options
 do
   case $options in
-    i) fasta=$OPTARG ;;
-    o) out=$OPTARG
+    d) dir=$OPTARG ;;
+    o) out=$OPTARG ;;
+    p) prefix=$OPTARG ;;
   esac
 done
+
+if [ -f ${dir}/Circularized_assembly_1_${prefix}.fasta ];then
+  fasta=${dir}/Circularized_assembly_1_${prefix}.fasta
+elif [ -f ${dir}/Option_1_${prefix}.fasta ];then 
+  fasta=${dir}/Option_1_${prefix}.fasta
+elif [ -f ${dir}/Option_2_${prefix}.fasta ];then 
+  fasta=${dir}/Option_2_${prefix}.fasta
+else 
+  echo "ERROR: NOVOPlasty could not return a complete circular assembly, assemble manually"
+  exit 1
+fi 
 
 # index the fasta input and get the sequence length
 samtools faidx ${fasta}
