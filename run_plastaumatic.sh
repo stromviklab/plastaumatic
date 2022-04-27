@@ -2,7 +2,7 @@
 
 if [ $# -ne 1 ];then
   echo "Usage: 
-      job_input.sh test.cfg"
+      run_plastaumatic.sh test.cfg"
   exit 1
 fi
 
