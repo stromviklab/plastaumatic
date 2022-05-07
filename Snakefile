@@ -71,7 +71,7 @@ rule PGA:
         "WORKDIR/standardizedGenome"
     output:
         directory("WORKDIR/annotatedGenome"),
-        gb="WORKDIR/annotatedGenome/test.plastome_assembly.gb"
+        gb="WORKDIR/annotatedGenome/prefix.plastome_assembly.gb"
     log: "WORKDIR/logs/PGA.log"
     shell:
         """
