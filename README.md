@@ -27,9 +27,7 @@ Simply clone this repository in your desired destination</br>
 
 2. Make sure to edit the config file for the executable before your run (a template for config file is `test.cfg` in the installation directory)
 
-````prefix=test                                                           #prefix to be used for the output directories and file names 
-read1=/home/noracwy/pipeline-test/read1.fq                                #complete path to the forward reads (can be .fq or .fq.gz)
-read2=/home/noracwy/pipeline-test/read2.fq                                #complete path to the reverse reads (can be .fq or .fq.gz)
+````
 seed=/home/noracwy/pipeline-test/seed.fasta                               #complete path to a seed fasta file for NOVOPlasty (see: https://github.com/ndierckx/NOVOPlasty)
 ref_fasta=/home/noracwy/pipeline-test/ref.fasta                           #complete path to a reference fasta file for NOVOPlasty (see: https://github.com/ndierckx/NOVOPlasty)
 ref_gb=/home/noracwy/pipeline-test/GBref/                                 #complete path to a directory with reference GenBank file for PGA (see: https://github.com/quxiaojian/PGA)
@@ -42,6 +40,14 @@ adapters=/home/noracwy/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa          #compl
 path_to_novoplasty=/home/noracwy/NOVOPlasty/NOVOPlasty4.3.1.pl            #complete path to the NOVOPlasty executable
 path_to_PGA=/home/noracwy/PGA/PGA.pl                                      #complete path to the PGA executable
 path_to_repo=/home/noracwy/pipeline-test/plastaumatic/                    #complete path to the plastaumatic repository
+fof=/home/noracwy/pipeline-test/readList.txt                              #a comma separated file with prefix and read files for running pipeline on single/multiple genomes
+````
+
+The file of filenames (fof) is a comma separated file in the form of `prefix,read1,read2` with each genome on a newline. 
+````
+prefix #prefix to be used for the output directory and file names 
+read1 #complete path to the forward reads (can be .fq or .fq.gz)
+read2 #complete path to the reverse reads (can be .fq or .fq.gz)
 ````
 
 
