@@ -9,7 +9,7 @@ Extended log          = 1
 Save assembled reads  = yes
 Seed Input            = path_to_seed
 Extend seed directly  = no
-Reference sequence    = path_to_reference
+Reference sequence    =
 Variance detection    = 
 Chloroplast sequence  = 
 
