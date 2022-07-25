@@ -34,5 +34,5 @@ Optional:
 -----------------------
 Insert size auto      = yes
 Use Quality Scores    = no
-Output path           = WORKDIR/assembledGenome/
+Output path           = WORKDIR
 
