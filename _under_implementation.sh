@@ -40,7 +40,7 @@ fi
 # max_memory=$(awk '/MemAvailable/ {printf "%.0f\n", $2/1024/1024*0.9}' /proc/meminfo)
 threads=1
 max_memory=30
-repo=$(pwd)/$(dirname $0)
+repo=$(dirname $0)
 
 for line in `cat $fof`;do 
 	prefix=$(echo $line|cut -d ',' -f1)

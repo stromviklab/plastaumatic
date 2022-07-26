@@ -1248,9 +1248,9 @@ FEATURES             Location/Qualifiers
      tRNA            join(104647..104684,105496..105530)
                      /gene="trnA-UGC"
                      /product="tRNA-Ala"
-     gene            105685..108493
+     gene            105684..108493
                      /gene="rrn23"
-     rRNA            105685..108493
+     rRNA            105684..108493
                      /gene="rrn23"
                      /product="23S ribosomal RNA"
      gene            108595..108697
@@ -1511,9 +1511,9 @@ FEATURES             Location/Qualifiers
      rRNA            complement(132726..132828)
                      /gene="rrn4.5"
                      /product="4.5S ribosomal RNA"
-     gene            complement(132931..135739)
+     gene            complement(132930..135739)
                      /gene="rrn23"
-     rRNA            complement(132931..135739)
+     rRNA            complement(132930..135739)
                      /gene="rrn23"
                      /product="23S ribosomal RNA"
      gene            complement(135893..136776)
