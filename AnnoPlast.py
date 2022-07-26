@@ -211,7 +211,7 @@ for record in SeqIO.parse(args.genbank,"genbank"):
         if len(feature.location.parts)==1:
             for my_list in map_file:
                 if "gene" in feature.qualifiers:
-                    if all(ftr in my_list for ftr in (feature.qualifiers["gene"][0], feature.type, str(feature.location.nofuzzy_start), str(feature.location.nofuzzy_end))):
+                    if all(ftr in my_list[0:4] for ftr in (feature.qualifiers["gene"][0], feature.type, str(feature.location.nofuzzy_start), str(feature.location.nofuzzy_end))):
                         new_strand=1 if my_list[6]=="plus" else -1
                         new_loc=FeatureLocation(int(my_list[4]),int(my_list[5]),new_strand)
                         feature.location=new_loc
@@ -221,8 +221,11 @@ for record in SeqIO.parse(args.genbank,"genbank"):
                             tr_seq2=tr_seq.translate(table=11)
                             new_trnsl={"translation":tr_seq2}
                             feature.qualifiers.update(new_trnsl)
+                            break
+                        else:
+                            break
                 else:
-                    if all(ftr in my_list for ftr in ("id", feature.type, str(feature.location.nofuzzy_start), str(feature.location.nofuzzy_end))):
+                    if all(ftr in my_list[0:4] for ftr in ("id", feature.type, str(feature.location.nofuzzy_start), str(feature.location.nofuzzy_end))):
                         new_strand=1 if my_list[6]=="plus" else -1
                         new_loc=FeatureLocation(int(my_list[4]),int(my_list[5]),new_strand)
                         feature.location=new_loc
@@ -231,7 +234,10 @@ for record in SeqIO.parse(args.genbank,"genbank"):
                             tr_seq=feature.location.extract(my_fa.seq)
                             tr_seq2=tr_seq.translate(table=11)
                             new_trnsl={"translation":tr_seq2}
-                            feature.qualifiers.update(new_trnsl)                        
+                            feature.qualifiers.update(new_trnsl)
+                            break
+                        else:
+                            break                        
 
         elif len(feature.location.parts)>1:
             i_count=0
@@ -239,7 +245,7 @@ for record in SeqIO.parse(args.genbank,"genbank"):
                 part=feature.location.parts[i]            
                 for my_list in map_file:
                     if "gene" in feature.qualifiers:                        
-                        if all(ftr in my_list for ftr in (feature.qualifiers["gene"][0], feature.type, str(part.nofuzzy_start), str(part.nofuzzy_end))):
+                        if all(ftr in my_list[0:4] for ftr in (feature.qualifiers["gene"][0], feature.type, str(part.nofuzzy_start), str(part.nofuzzy_end))):
                             new_strand=1 if my_list[6]=="plus" else -1
                             new_loc=FeatureLocation(int(my_list[4]),int(my_list[5]),new_strand)
                             feature.location.parts[i]=new_loc
@@ -251,8 +257,11 @@ for record in SeqIO.parse(args.genbank,"genbank"):
                                     tr_seq2=tr_seq.translate(table=11)
                                     new_trnsl={"translation":tr_seq2}
                                     feature.qualifiers.update(new_trnsl)
+                                    break
+                                else:
+                                    break                                    
                     else:
-                        if all(ftr in my_list for ftr in ("id", feature.type, str(part.nofuzzy_start), str(part.nofuzzy_end))):
+                        if all(ftr in my_list[0:4] for ftr in ("id", feature.type, str(part.nofuzzy_start), str(part.nofuzzy_end))):
                             new_strand=1 if my_list[6]=="plus" else -1
                             new_loc=FeatureLocation(int(my_list[4]),int(my_list[5]),new_strand)
                             feature.location.parts[i]=new_loc
@@ -264,6 +273,9 @@ for record in SeqIO.parse(args.genbank,"genbank"):
                                     tr_seq2=tr_seq.translate(table=11)
                                     new_trnsl={"translation":tr_seq2}
                                     feature.qualifiers.update(new_trnsl)   
+                                    break
+                                else:
+                                    break                                    
                                                   
     record.features=new_features
     with open(args.out.absolute()/(args.prefix+'.gb'), "w") as new_gb:
