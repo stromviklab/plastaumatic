@@ -4,7 +4,7 @@
 set -eo pipefail
 
 ## parse arguments
-while getopts ':s:g:r:o:f:h' options
+while getopts ':s:g:r:o:f:n:h' options
 do
   case $options in
     s) seed=$OPTARG ;;
@@ -12,12 +12,14 @@ do
 	r) range=$OPTARG ;;
 	o) out=$OPTARG ;;
     f) fof=$OPTARG ;;
-	h) echo -e "Usage:\tplastaumatic -s seed.fa -g reference.gb -r <120000-160000> -o out_dir -f fof.txt\
+	n) novo=$OPTARG ;;
+	h) echo -e "Usage:\tplastaumatic -s seed.fa -g reference.gb -r <120000-160000> -o out_dir -f fof.txt -n NOVOPlasty4.3.1.pl\
 				\noptions:\n\t -s\t Path to the seed file for assembly\
 				\n\t -g\t Path to the reference GenBank file\
 				\n\t -r\t Plastome assembly size range [150000-160000]\
 				\n\t -o\t Path to the output directory\
 				\n\t -f\t Path to the file-of-filenames with reads\
+				\n\t -n\t Path to NOVOPlasty executable\
 				\n\t -h\t Shows this help message\n"
 		exit;;
 	:) echo "ERROR: -$OPTARG requires an argument" 1>&2
@@ -28,12 +30,11 @@ do
 done
 
 ## Checks missing options
-if [ $# -ne 5 ];then
+if [ $# -eq 0 ] || [ -z "$seed" ] || [ -z "$ref_gb" ] || [ -z "$range" ] || [ -z "$out" ] || [ -z "$fof" ]  || [ -z "$novo" ];then 
 	echo "ERROR: missing options, try
             plastaumatic -h"
 	exit
 fi
-
 
 ## Checks if the input files are present
 if [ ! -f $seed ];then
@@ -46,8 +47,8 @@ elif ! command -v samtools &> /dev/null ;then
 	echo -e "ERROR:\t samtools executable does not exist in the path, check again" && exit
 elif ! command -v blastn &> /dev/null ;then 
 	echo -e "ERROR:\t blastn executable does not exist in the path, check again" && exit
-elif ! echo $PATH|grep -q "NOVOPlasty";then 
-	echo -e "ERROR:\t NOVOPlasty executable does not exist in the path, check again" && exit
+elif [ ! -f $novo ];then 
+	echo -e "ERROR:\t NOVOPlasty executable does not exist, check again" && exit
 elif [ ! -f $fof ];then 
 	echo -e "ERROR:\t fof file does not exist, check again" && exit
 fi
@@ -58,6 +59,10 @@ fi
 threads=1
 max_memory=30
 repo=$(dirname $0)
+seed_path=$(pwd)/${seed#$(pwd)/}
+ref_gb_path=$(pwd)/${ref_gb#$(pwd)/}
+novo_path=$(pwd)/${novo#$(pwd)/}
+out_path=$(pwd)/${out#$(pwd)/}
 
 for line in `cat $fof`;do 
 	prefix=$(echo $line|cut -d ',' -f1)
@@ -74,8 +79,8 @@ for line in `cat $fof`;do
 
 	## Setting the directories
 	echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tsetting up the directories" 
-	mkdir -p ${out}
-	cd ${out}
+	mkdir -p ${out_path}
+	cd ${out_path}
 	mkdir -p ${prefix}
 	cd ${prefix}
 	WORKDIR=$(pwd)
@@ -84,7 +89,7 @@ for line in `cat $fof`;do
 	## Trimming
 	if [ ! -f ${WORKDIR}/trimming/trimming.done ];then
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming the reads"
-		${path_to_fastp} -i ${read1} -I ${read2} -o ${WORKDIR}/trimming/${base1} -O ${WORKDIR}/trimming/${base2} -w ${threads} &> ${WORKDIR}/logs/fastp.log
+		fastp -i ${read1} -I ${read2} -o ${WORKDIR}/trimming/${base1} -O ${WORKDIR}/trimming/${base2} -w ${threads} &> ${WORKDIR}/logs/fastp.log
 		touch ${WORKDIR}/trimming/trimming.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming was already done ... skipping"
@@ -97,10 +102,10 @@ for line in `cat $fof`;do
 		read2_novo=${WORKDIR}/trimming/${base2}
 
 		cat ${repo}/config_novo.txt |sed "s|WORKDIR|${WORKDIR}/assembly/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
-		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|\
+		sed "s|path_to_seed|${seed_path}|" |sed "s|range|$range|"|\
 		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}_config.txt
 
-		perl ${path_to_novoplasty} -c ${WORKDIR}/${prefix}_config.txt &> ${WORKDIR}/logs/novoplasty.log
+		perl ${novo_path} -c ${WORKDIR}/${prefix}_config.txt &> ${WORKDIR}/logs/novoplasty.log
 
 		touch ${WORKDIR}/assembly/novoplasty.done
 	else 
@@ -148,7 +153,7 @@ for line in `cat $fof`;do
 	if [ ! -f ${WORKDIR}/annotation/annotation.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotating the assembly"
 		cd ${WORKDIR}/annotation
-		python3 ${repo}/AnnoPlast.py -f ${WORKDIR}/assembly/${prefix}.plastome.fa -g ${ref_gb} -o ./ -p ${prefix}
+		python3 ${repo}/AnnoPlast.py -f ${WORKDIR}/assembly/${prefix}.plastome.fa -g ${ref_gb_path} -o ./ -p ${prefix}
 		touch ${WORKDIR}/annotation/annotation.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotation was already done ... skipping"
@@ -164,6 +169,6 @@ for line in `cat $fof`;do
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tgenbank to tbl conversion was already done ... skipping"
 	fi 
-	echo -e "\n"
+	echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tFinished plastaumatic on $prefix\n\n"
 done 
 
