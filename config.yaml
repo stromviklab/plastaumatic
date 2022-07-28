@@ -1,0 +1,8 @@
+seed: Test_dataset/seed.fasta
+ref_gb: Test_dataset/reference.gb
+range: 120000-160000
+repo: plastaumatic
+novo_path: /mnt2/software/NOVOPlasty/NOVOPlasty4.3.1.pl
+samples:
+  genome1: Test_dataset/test1.fq.gz,Test_dataset/test2.fq.gz
+
