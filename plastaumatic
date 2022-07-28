@@ -89,7 +89,7 @@ for line in `cat $fof`;do
 		read1_novo=${prefix}/01-trim/${prefix}_1.fq
 		read2_novo=${prefix}/01-trim/${prefix}_2.fq
 
-		cat ${repo}/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
+		cat ${repo}/scripts/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
 		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|\
 		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}/${prefix}_config.txt
 
@@ -102,7 +102,7 @@ for line in `cat $fof`;do
 
 	## Standardizes the assembly
 	if [ ! -f ${prefix}/03-standardize/standardization.done ];then 
-		${repo}/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
+		${repo}/scripts/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
 		touch ${prefix}/03-standardize/standardization.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tstandardization was already done ... skipping"
@@ -111,7 +111,7 @@ for line in `cat $fof`;do
 	## Annotation of the assembly
 	if [ ! -f ${prefix}/04-annotate/annotation.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotating the assembly"
-		python3 ${repo}/AnnoPlast.py -f ${prefix}/03-standardize/${prefix}.plastome.fa -g ${ref_gb} -o ${prefix}/04-annotate -p ${prefix}
+		python3 ${repo}/scripts/AnnoPlast.py -f ${prefix}/03-standardize/${prefix}.plastome.fa -g ${ref_gb} -o ${prefix}/04-annotate -p ${prefix}
 		touch ${prefix}/04-annotate/annotation.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotation was already done ... skipping"
@@ -120,7 +120,7 @@ for line in `cat $fof`;do
 	## genbank to tbl format for NCBI submission
 	if [ ! -f ${prefix}/05-tbl/tbl.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tconverting genbank file to .tbl"
-		${repo}/gbf2tbl.pl ${prefix}/04-annotate/${prefix}.gb
+		${repo}/scripts/gbf2tbl.pl ${prefix}/04-annotate/${prefix}.gb
 		mv ${prefix}/04-annotate/${prefix}.tbl ${prefix}/05-tbl/${prefix}.tbl
 		mv ${prefix}/04-annotate/${prefix}.fsa ${prefix}/05-tbl/${prefix}.fsa
 		touch ${prefix}/05-tbl/tbl.done

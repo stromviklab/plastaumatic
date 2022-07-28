@@ -31,7 +31,7 @@ rule config:
     input:
         trim_f="{sample}/01-trim/{sample}_1.fq",
         trim_r="{sample}/01-trim/{sample}_2.fq",
-        config=expand("{rp}/config_novo.txt",rp=config['repo'])
+        config=expand("{rp}/scripts/config_novo.txt",rp=config['repo'])
     output:
         "{sample}/{sample}_config.txt"
     params:
@@ -71,7 +71,7 @@ rule standardize:
         "{sample}/00-logs/03-standardize.log"
     shell:
         """
-        {params.repo}/standardize_cpDNA.sh -d {input} -o {output.standardized} -p {params.prefix} &> {log}
+        {params.repo}/scripts/standardize_cpDNA.sh -d {input} -o {output.standardized} -p {params.prefix} &> {log}
         """
 rule annotate:
     input:
@@ -86,7 +86,7 @@ rule annotate:
         "{sample}/00-logs/04-annotate.log"
     shell:
         """
-        python3 {params.repo}/AnnoPlast.py -f {input.fa} -g {input.gb} -o {output} -p {params.prefix} &> {log}
+        python3 {params.repo}/scripts/AnnoPlast.py -f {input.fa} -g {input.gb} -o {output} -p {params.prefix} &> {log}
         """
 rule tbl:
     input:
@@ -99,7 +99,7 @@ rule tbl:
         repo=config['repo']
     shell:
         """
-    	perl {params.repo}/gbf2tbl.pl {input}/{params.prefix}.gb
+    	perl {params.repo}/scripts/gbf2tbl.pl {input}/{params.prefix}.gb
 		mv {input}/{params.prefix}.fsa {output.fsa} 
         mv {input}/{params.prefix}.tbl {output.tbl}
         ln -s 03-standardize/{params.prefix}.plastome.fa {params.prefix}/{params.prefix}.plastome.fa
