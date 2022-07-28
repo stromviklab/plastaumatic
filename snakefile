@@ -9,7 +9,7 @@ rule all:
     input:
         expand("{sample}/05-tbl/{sample}.fsa",sample=config['samples']),
         expand("{sample}/05-tbl/{sample}.tbl",sample=config['samples'])
-rule trimming:
+rule trim:
     input:
         raw_f=get_read_f,
         raw_r=get_read_r
@@ -44,7 +44,7 @@ rule config:
             sed "s|max_memory|30|" | sed "s|path_to_seed|{params.seed}|" |sed "s|range|{params.range}|"|\
             sed "s|read1|{input.trim_f}|" | sed "s|read2|{input.trim_r}|" > {output}
         """
-rule novoplasty:
+rule assemble:
     input:
         "{sample}/{sample}_config.txt"
     output:
@@ -73,7 +73,7 @@ rule standardize:
         """
         {params.repo}/standardize_cpDNA.sh -d {input} -o {output.standardized} -p {params.prefix} &> {log}
         """
-rule annoplast:
+rule annotate:
     input:
         fa="{sample}/03-standardize/{sample}.plastome.fa",
         gb=config['ref_gb']        
@@ -88,7 +88,7 @@ rule annoplast:
         """
         python3 {params.repo}/AnnoPlast.py -f {input.fa} -g {input.gb} -o {output} -p {params.prefix} &> {log}
         """
-rule NCBI:
+rule tbl:
     input:
         "{sample}/04-annotate"
     output:
