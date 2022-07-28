@@ -4,20 +4,18 @@
 set -eo pipefail
 
 ## parse arguments
-while getopts ':s:g:r:o:f:n:h' options
+while getopts ':s:g:r:f:n:h' options
 do
   case $options in
     s) seed=$OPTARG ;;
     g) ref_gb=$OPTARG ;;
 	r) range=$OPTARG ;;
-	o) out=$OPTARG ;;
     f) fof=$OPTARG ;;
 	n) novo=$OPTARG ;;
-	h) echo -e "Usage:\tplastaumatic -s seed.fa -g reference.gb -r <120000-160000> -o out_dir -f fof.txt -n NOVOPlasty4.3.1.pl\
+	h) echo -e "Usage:\tplastaumatic -s seed.fa -g reference.gb -r <120000-160000> -f fof.txt -n NOVOPlasty4.3.1.pl\
 				\noptions:\n\t -s\t Path to the seed file for assembly\
 				\n\t -g\t Path to the reference GenBank file\
 				\n\t -r\t Plastome assembly size range [150000-160000]\
-				\n\t -o\t Path to the output directory\
 				\n\t -f\t Path to the file-of-filenames with reads\
 				\n\t -n\t Path to NOVOPlasty executable\
 				\n\t -h\t Shows this help message\n"
@@ -30,7 +28,7 @@ do
 done
 
 ## Checks missing options
-if [ $# -eq 0 ] || [ -z "$seed" ] || [ -z "$ref_gb" ] || [ -z "$range" ] || [ -z "$out" ] || [ -z "$fof" ]  || [ -z "$novo" ];then 
+if [ $# -eq 0 ] || [ -z "$seed" ] || [ -z "$ref_gb" ] || [ -z "$range" ] || [ -z "$fof" ]  || [ -z "$novo" ];then 
 	echo "ERROR: missing options, try
             plastaumatic -h"
 	exit
@@ -59,17 +57,11 @@ fi
 threads=1
 max_memory=30
 repo=$(dirname $0)
-seed_path=$(pwd)/${seed#$(pwd)/}
-ref_gb_path=$(pwd)/${ref_gb#$(pwd)/}
-novo_path=$(pwd)/${novo#$(pwd)/}
-out_path=$(pwd)/${out#$(pwd)/}
 
 for line in `cat $fof`;do 
 	prefix=$(echo $line|cut -d ',' -f1)
 	read1=$(echo $line|cut -d ',' -f2)
 	read2=$(echo $line|cut -d ',' -f3)
-	base1=$(basename $read1)
-	base2=$(basename $read2)
 
 	if [ ! -f $read1 ] || [ ! -f $read2 ];then
 		echo -e "ERROR: \t Read files does not exist, check again" && exit 1
@@ -79,64 +71,62 @@ for line in `cat $fof`;do
 
 	## Setting the directories
 	echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tsetting up the directories" 
-	mkdir -p ${out_path}
-	cd ${out_path}
-	mkdir -p ${prefix}
-	cd ${prefix}
-	WORKDIR=$(pwd)
-	mkdir -p trimming assembly annotation NCBI logs
+	mkdir -p ${prefix}/{00-logs,01-trim,02-assemble,03-standardize,04-annotate,05-tbl}
 
 	## Trimming
-	if [ ! -f ${WORKDIR}/trimming/trimming.done ];then
+	if [ ! -f ${prefix}/01-trim/trimming.done ];then
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming the reads"
-		fastp -i ${read1} -I ${read2} -o ${WORKDIR}/trimming/${base1} -O ${WORKDIR}/trimming/${base2} -w ${threads} &> ${WORKDIR}/logs/fastp.log
-		touch ${WORKDIR}/trimming/trimming.done
+		fastp -i ${read1} -I ${read2} -o ${prefix}/01-trim/${prefix}_1.fq -O ${prefix}/01-trim/${prefix}_2.fq -w ${threads} \
+			-h ${prefix}/01-trim/${prefix}.html -j ${prefix}/01-trim/${prefix}.json &> ${prefix}/00-logs/01-trim.log
+		touch ${prefix}/01-trim/trimming.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming was already done ... skipping"
 	fi
 	
 	## de novo assembly
-	if [ ! -f ${WORKDIR}/assembly/novoplasty.done ];then 
+	if [ ! -f ${prefix}/02-assemble/novoplasty.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tperforming the de novo assembly"
-		read1_novo=${WORKDIR}/trimming/${base1}
-		read2_novo=${WORKDIR}/trimming/${base2}
+		read1_novo=${prefix}/01-trim/${prefix}_1.fq
+		read2_novo=${prefix}/01-trim/${prefix}_2.fq
 
-		cat ${repo}/config_novo.txt |sed "s|WORKDIR|${WORKDIR}/assembly/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
-		sed "s|path_to_seed|${seed_path}|" |sed "s|range|$range|"|\
-		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}_config.txt
+		cat ${repo}/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
+		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|\
+		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}/${prefix}_config.txt
 
-		perl ${novo_path} -c ${WORKDIR}/${prefix}_config.txt &> ${WORKDIR}/logs/novoplasty.log
+		perl ${novo} -c ${prefix}/${prefix}_config.txt &> ${prefix}/00-logs/02-assemble.log
 
-		touch ${WORKDIR}/assembly/novoplasty.done
+		touch ${prefix}/02-assemble/novoplasty.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tassembly was already done ... skipping"
 	fi 
 
 	## Standardizes the assembly
-	if [ ! -f ${WORKDIR}/assembly/standardization.done ];then 
-		${repo}/standardize_cpDNA.sh -d ${WORKDIR}/assembly/ -o ${WORKDIR}/assembly/${prefix}.plastome.fa -p ${prefix}
-		touch ${WORKDIR}/assembly/standardization.done
+	if [ ! -f ${prefix}/03-standardize/standardization.done ];then 
+		${repo}/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
+		touch ${prefix}/03-standardize/standardization.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tstandardization was already done ... skipping"
 	fi 
 
 	## Annotation of the assembly
-	if [ ! -f ${WORKDIR}/annotation/annotation.done ];then 
+	if [ ! -f ${prefix}/04-annotate/annotation.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotating the assembly"
-		cd ${WORKDIR}/annotation
-		python3 ${repo}/AnnoPlast.py -f ${WORKDIR}/assembly/${prefix}.plastome.fa -g ${ref_gb_path} -o ./ -p ${prefix}
-		touch ${WORKDIR}/annotation/annotation.done
+		python3 ${repo}/AnnoPlast.py -f ${prefix}/03-standardize/${prefix}.plastome.fa -g ${ref_gb} -o ${prefix}/04-annotate -p ${prefix}
+		touch ${prefix}/04-annotate/annotation.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotation was already done ... skipping"
 	fi 
 
 	## genbank to tbl format for NCBI submission
-	if [ ! -f ${WORKDIR}/NCBI/tbl.done ];then 
+	if [ ! -f ${prefix}/05-tbl/tbl.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tconverting genbank file to .tbl"
-		cd ${WORKDIR}/NCBI/
-		${repo}/gbf2tbl.pl ${WORKDIR}/annotation/${prefix}.gb
-		mv ${WORKDIR}/annotation/${prefix}.tbl ${WORKDIR}/annotation/${prefix}.fsa . 
-		touch ${WORKDIR}/NCBI/tbl.done
+		${repo}/gbf2tbl.pl ${prefix}/04-annotate/${prefix}.gb
+		mv ${prefix}/04-annotate/${prefix}.tbl ${prefix}/05-tbl/${prefix}.tbl
+		mv ${prefix}/04-annotate/${prefix}.fsa ${prefix}/05-tbl/${prefix}.fsa
+		touch ${prefix}/05-tbl/tbl.done
+		ln -s 03-standardize/${prefix}.plastome.fa ${prefix}/${prefix}.plastome.fa
+		ln -s 04-annotate/${prefix}.gb ${prefix}/${prefix}.plastome.gb
+
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tgenbank to tbl conversion was already done ... skipping"
 	fi 
