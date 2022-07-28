@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -eo pipefail
 while getopts 'd:o:p:' options
 do
   case $options in
@@ -172,3 +172,27 @@ else
 fi
 
 rm -r ${dir2} ${fasta}.fai
+
+## Check and correct non-ACTG characters in the assembly 
+echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tchecking for non-ATCG characters in the $prefix assembly"
+non_actg=$(cat ${out}|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
+while [ ! -z "$non_actg" ];do 
+  samtools faidx ${out}
+  header=$(awk '{print $1}' ${out}.fai) 
+  line1=$(cat ${out}|sed 1d|tr -d '\n' |sed 's/./&\n/g'|grep -n "[A-Za-z]"|grep -Ev "[ACTGactg]"|head -1|sed 's/:/\t/g')
+  char=$(echo $line1|awk '{print $2}')
+  if [ $(echo $line1|awk '{print $1}') -gt 100 ];then 
+    loc=$(echo $line1|awk '{print "'$header':"$1-100"-"$1-1}') 
+    seq=$(samtools faidx -n 200 ${out} "$loc"|sed 1d)
+    new_seq=$(grep -o "$seq[A-Za-z]" ${dir}/Assembled_reads_${prefix}_R*.fasta |cut -d ':' -f2|sort|uniq -c |sort -k1 -n -r |head -1|awk '{print $2}')
+    sed -i "s/$seq$char/$new_seq/1" ${out} 
+    non_actg=$(cat ${out}|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
+  else
+    loc=$(echo $line1|awk '{print "'$header':"$1+1"-"$1+100}')
+    seq=$(samtools faidx -n 200 ${out} "$loc"|sed 1d)
+    new_seq=$(grep -o "[A-Za-z]$seq" ${dir}/Assembled_reads_${prefix}_R*.fasta |cut -d ':' -f2|sort|uniq -c |sort -k1 -n -r |head -1|awk '{print $2}')
+    sed -i "s/$char$seq/$new_seq/1" ${out} 
+    non_actg=$(cat ${out}|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
+  fi 
+done 
+echo -e "$(date +'%Y-%m-%d %H:%M:%S')\t$prefix Plastome assembly size: $(cat ${out} |sed 1d|tr -d '\n'|wc -c) bps"

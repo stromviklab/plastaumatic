@@ -120,35 +120,6 @@ for line in `cat $fof`;do
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tstandardization was already done ... skipping"
 	fi 
 
-	## Corrects non-ACTG characters in the assembly
-	if [ ! -f ${WORKDIR}/assembly/check.done ];then 
-		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tchecking for non-ATCG characters in the $prefix assembly"
-		non_actg=$(cat ${WORKDIR}/assembly/${prefix}.plastome.fa|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
-		while [ ! -z "$non_actg" ];do 
-			samtools faidx ${WORKDIR}/assembly/${prefix}.plastome.fa
-			header=$(awk '{print $1}' ${WORKDIR}/assembly/${prefix}.plastome.fa.fai) 
-			line1=$(cat ${WORKDIR}/assembly/${prefix}.plastome.fa|sed 1d|tr -d '\n' |sed 's/./&\n/g'|grep -n "[A-Za-z]"|grep -Ev "[ACTGactg]"|head -1|sed 's/:/\t/g')
-			char=$(echo $line1|awk '{print $2}')
-			if [ $(echo $line1|awk '{print $1}') -gt 100 ];then 
-				loc=$(echo $line1|awk '{print "'$header':"$1-100"-"$1-1}') 
-				seq=$(samtools faidx -n 200 ${WORKDIR}/assembly/${prefix}.plastome.fa "$loc"|sed 1d)
-				new_seq=$(grep -o "$seq[A-Za-z]" ./sim/assembledGenome/Assembled_reads_sim_R*.fasta |cut -d ':' -f2|sort|uniq -c |sort -k1 -n -r |head -1|awk '{print $2}')
-				sed -i "s/$seq$char/$new_seq/1" ${WORKDIR}/assembly/${prefix}.plastome.fa 
-				non_actg=$(cat ${WORKDIR}/assembly/${prefix}.plastome.fa|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
-			else
-				loc=$(echo $line1|awk '{print "'$header':"$1+1"-"$1+100}')
-				seq=$(samtools faidx -n 200 ${WORKDIR}/assembly/${prefix}.plastome.fa "$loc"|sed 1d)
-				new_seq=$(grep -o "[A-Za-z]$seq" ./sim/assembledGenome/Assembled_reads_sim_R*.fasta |cut -d ':' -f2|sort|uniq -c |sort -k1 -n -r |head -1|awk '{print $2}')
-				sed -i "s/$char$seq/$new_seq/1" ${WORKDIR}/assembly/${prefix}.plastome.fa 
-				non_actg=$(cat ${WORKDIR}/assembly/${prefix}.plastome.fa|sed 1d|tr -d '\n' |tr -d 'ACTGactg')
-			fi 
-		done 
-		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\t$prefix Plastome assembly size: $(cat ${WORKDIR}/assembly/${prefix}.plastome.fa |sed 1d|tr -d '\n'|wc -c) bps"
-		touch ${WORKDIR}/assembly/check.done
-	else 
-		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tchecking assembly quality was already done ... skipping"
-	fi 
-
 	## Annotation of the assembly
 	if [ ! -f ${WORKDIR}/annotation/annotation.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotating the assembly"
