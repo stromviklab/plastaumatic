@@ -25,7 +25,7 @@ rule trim:
     shell:
         """
         fastp -i {input.raw_f} -I {input.raw_r} -o {output.trim_f} -O {output.trim_r} \
-            -h {output.html} -j {output.json} -w {threads} &> {log}
+            -h {output.html} -j {output.json} -w {threads} --reads_to_process 10000000 &> {log}
         """
 rule config:
     input:
@@ -41,7 +41,7 @@ rule config:
     shell:
         """
         cat {input.config} |sed "s|WORKDIR|{params.prefix}/02-assemble/|g"| sed "s|test|{params.prefix}|" |\
-            sed "s|max_memory|30|" | sed "s|path_to_seed|{params.seed}|" |sed "s|range|{params.range}|"|\
+            sed "s|path_to_seed|{params.seed}|" |sed "s|range|{params.range}|"|\
             sed "s|read1|{input.trim_f}|" | sed "s|read2|{input.trim_r}|" > {output}
         """
 rule assemble:
@@ -66,12 +66,13 @@ rule standardize:
         standardized="{sample}/03-standardize/{sample}.plastome.fa"
     params:
         prefix="{sample}",
-        repo=config['repo']
+        repo=config['repo'],
+        gb=config['ref_gb']
     log:
         "{sample}/00-logs/03-standardize.log"
     shell:
         """
-        {params.repo}/scripts/standardize_cpDNA.sh -d {input} -o {output.standardized} -p {params.prefix} &> {log}
+        {params.repo}/scripts/standardize_cpDNA.sh -d {input} -g {params.gb} -o {output.standardized} -p {params.prefix} &> {log}
         """
 rule annotate:
     input:

@@ -77,7 +77,7 @@ for line in `cat $fof`;do
 	if [ ! -f ${prefix}/01-trim/trimming.done ];then
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming the reads"
 		fastp -i ${read1} -I ${read2} -o ${prefix}/01-trim/${prefix}_1.fq -O ${prefix}/01-trim/${prefix}_2.fq -w ${threads} \
-			-h ${prefix}/01-trim/${prefix}.html -j ${prefix}/01-trim/${prefix}.json &> ${prefix}/00-logs/01-trim.log
+			-h ${prefix}/01-trim/${prefix}.html -j ${prefix}/01-trim/${prefix}.json --reads_to_process 10000000 &> ${prefix}/00-logs/01-trim.log
 		touch ${prefix}/01-trim/trimming.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\ttrimming was already done ... skipping"
@@ -89,7 +89,7 @@ for line in `cat $fof`;do
 		read1_novo=${prefix}/01-trim/${prefix}_1.fq
 		read2_novo=${prefix}/01-trim/${prefix}_2.fq
 
-		cat ${repo}/scripts/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" |sed "s|max_memory|${max_memory}|" | \
+		cat ${repo}/scripts/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" | \
 		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|\
 		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}/${prefix}_config.txt
 
@@ -102,7 +102,7 @@ for line in `cat $fof`;do
 
 	## Standardizes the assembly
 	if [ ! -f ${prefix}/03-standardize/standardization.done ];then 
-		${repo}/scripts/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
+		${repo}/scripts/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -g ${ref_gb} -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
 		touch ${prefix}/03-standardize/standardization.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tstandardization was already done ... skipping"
