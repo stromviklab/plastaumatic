@@ -31,20 +31,22 @@ print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Extracting referene features
 ref_seqs=open(args.out.absolute()/"ref_features.fa",'w')
 my_fa=SeqIO.read(args.fasta,"fasta")
 my_gb=SeqIO.read(args.genbank,"genbank")
+ftr_types="gene CDS intron exon rRNA tRNA"
 smallest_ftr=[]
 ftr_ids=[]
 for feature in my_gb.features[1:]:
-    for part in feature.location.parts:
-        if "gene" in feature.qualifiers:
-            print(">",list(feature.qualifiers["gene"])[0],"_",feature.type,"_",part.nofuzzy_start,"_",part.nofuzzy_end,sep="", file=ref_seqs)
-            print(part.extract(my_gb.seq), file=ref_seqs)
-            smallest_ftr.append(part.nofuzzy_end-part.nofuzzy_start)
-            ftr_ids.append(list(feature.qualifiers["gene"])[0]+"_"+feature.type+"_"+str(part.nofuzzy_start)+"_"+str(part.nofuzzy_end))
-        else:
-            print(">id_",feature.type,"_",part.nofuzzy_start,"_",part.nofuzzy_end,sep="", file=ref_seqs)
-            print(part.extract(my_gb.seq), file=ref_seqs)
-            smallest_ftr.append(part.nofuzzy_end-part.nofuzzy_start)
-            ftr_ids.append("id_"+feature.type+"_"+str(part.nofuzzy_start)+"_"+str(part.nofuzzy_end))
+    if any(ftr_type == feature.type for ftr_type in ftr_types.split()):
+        for part in feature.location.parts:
+            if "gene" in feature.qualifiers:
+                print(">",list(feature.qualifiers["gene"])[0],"_",feature.type,"_",part.nofuzzy_start,"_",part.nofuzzy_end,sep="", file=ref_seqs)
+                print(part.extract(my_gb.seq), file=ref_seqs)
+                smallest_ftr.append(part.nofuzzy_end-part.nofuzzy_start)
+                ftr_ids.append(list(feature.qualifiers["gene"])[0]+"_"+feature.type+"_"+str(part.nofuzzy_start)+"_"+str(part.nofuzzy_end))
+            else:
+                print(">id_",feature.type,"_",part.nofuzzy_start,"_",part.nofuzzy_end,sep="", file=ref_seqs)
+                print(part.extract(my_gb.seq), file=ref_seqs)
+                smallest_ftr.append(part.nofuzzy_end-part.nofuzzy_start)
+                ftr_ids.append("id_"+feature.type+"_"+str(part.nofuzzy_start)+"_"+str(part.nofuzzy_end))
 ref_seqs.close()
 ftr_ids=set(ftr_ids)
 
