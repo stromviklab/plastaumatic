@@ -52,10 +52,7 @@ elif [ ! -f $fof ];then
 fi
 
 ## Sets memory and cpus available
-# threads=$(nproc --all)
-# max_memory=$(awk '/MemAvailable/ {printf "%.0f\n", $2/1024/1024*0.9}' /proc/meminfo)
-threads=1
-max_memory=30
+threads=$(nproc --all)
 repo=$(dirname $0)
 
 for line in `cat $fof`;do 
