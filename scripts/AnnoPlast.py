@@ -66,7 +66,7 @@ def run_blast(p_ident):
     df=pd.read_table(args.out.absolute()/"blast.anno.out",sep='\t',names=["ref","r_start","r_end","qry","q_start","q_end","evalue","ident","strand","cov"])
 
     ### filter alignments and separate into duplicated and non-duplicated alignemnts 
-    df2=df.loc[df['cov']>95]
+    df2=df.loc[df['cov']>99]
     df2=df2[['ref','r_start','r_end','q_start','q_end','strand']]
     df_plus=df2.loc[df2['strand'] == "plus"]
     df_minus=df2.loc[df2['strand'] == "minus",['ref','r_start','r_end','q_end','q_start','strand']]
