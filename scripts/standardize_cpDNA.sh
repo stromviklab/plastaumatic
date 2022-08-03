@@ -30,9 +30,21 @@ standardize() {
   ## ideally, the IR sequences in plastome should be identical, and hence a perc_identity of 99 is used
   ## self match is removed and any match less than 1000 bp length is removed
   ## based on test runs, the length can be reduced down to 100 bp (not sure how it preforms with 100 though)
-  blastn -query ${fasta} -subject ${fasta} -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident'|awk '$2!=$5&&$3!=$6 {print}'|awk '$7>1000 {print}' > ${dir2}/_tmp.blast.out
+  blastn -query ${fasta} -subject ${fasta} -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident'|awk '$2!=$5&&$3!=$6 {print}'|sort  -k7,7nr -k2,2n  > ${dir2}/_tmp.blast.out
 
-  ## if the fasta is split at inverted repeats, it would give more than 2 alignments (4 to be precise)
+  head -2 ${dir2}/_tmp.blast.out > ${dir2}/_tmp.blast.out2 
+  start=$(head -1 ${dir2}/_tmp.blast.out|awk '{print $2}')
+  end=$(head -1 ${dir2}/_tmp.blast.out|awk '{print $5}')
+  if [ $start -eq 1 ];then  
+    awk '$3=='$seq_len' && $6-1=='$end' {print}' ${dir2}/_tmp.blast.out >> ${dir2}/_tmp.blast.out2 
+    awk '$5=='$seq_len' && $2-1=='$end' {print}' ${dir2}/_tmp.blast.out >> ${dir2}/_tmp.blast.out2 
+  elif [ $end -eq $seq_len ];then
+    awk '$2==1 && $5+1=='$start' {print}' ${dir2}/_tmp.blast.out >> ${dir2}/_tmp.blast.out2
+    awk '$6==1 && $3+1=='$start' {print}' ${dir2}/_tmp.blast.out >> ${dir2}/_tmp.blast.out2
+  fi
+  mv ${dir2}/_tmp.blast.out2 ${dir2}/_tmp.blast.out
+
+  ## if the fasta is split at inverted repeats, it would give 4 alignments
   if [ $(grep -c "^" ${dir2}/_tmp.blast.out) -gt 2 ];then 
       ir_tmp=$(cat ${dir2}/_tmp.blast.out|awk '$3=='$seq_len' {print $6-1}')
       sc1=$(cat ${dir2}/_tmp.blast.out|awk '$5=='$ir_tmp' {print $6-$3}')
@@ -61,7 +73,7 @@ standardize() {
       cat ${dir2}/irbs ${dir2}/irbe > ${dir2}/IRb.fa 
       cat ${dir2}/iras ${dir2}/irae > ${dir2}/IRa.fa 
       ## double checking the IR alignments 
-      if [ "$(blastn -query IRa.fa -subject IRb.fa -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident' |awk 'NR==1&&$2==$6&&$3==$5 {print "Success"}')" == "Success" ] ;then 
+      if [ "$(blastn -query ${dir2}/IRa.fa -subject ${dir2}/IRb.fa -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident' |awk 'NR==1&&$2==$6&&$3==$5 {print "Success"}')" == "Success" ] ;then 
         samtools faidx ${fasta} "$lsc" |sed 1d > ${dir2}/LSC.fa 
         samtools faidx ${fasta} "$ssc" |sed 1d > ${dir2}/SSC.fa 
         cat ${dir2}/IRa.fa | sed 1d > ${dir2}/_tmp.IRa.fa 
@@ -169,34 +181,44 @@ standardize() {
 if [ -f ${dir}/Circularized_assembly_1_${prefix}.fasta ];then
   standardize "${dir}/Circularized_assembly_1_${prefix}.fasta" 0
   mv ${dir2}/out_0.fa ${out}
-elif [[ -f ${dir}/Option_1_${prefix}.fasta ]] && [[ -f ${dir}/Option_2_${prefix}.fasta ]];then 
-  standardize "${dir}/Option_1_${prefix}.fasta" 1
-  standardize "${dir}/Option_2_${prefix}.fasta" 2
-  # get reference fasta
-  echo ">ref" > ${dir2}/ref.fa
-  awk '/ORIGIN/,/\/\//' ${gb} |grep -v "ORIGIN"|grep -v "\//"|tr -d "[0-9]"|tr -d ' '|tr -d '\n' >> ${dir2}/ref.fa 
-  ## Selecting option1 or option2 based on the reference
-  for k in 1 2; do
-    blastn -query ${dir2}/ref.fa -subject ${dir2}/out_${k}.fa -perc_identity 95 -evalue 0.1 -outfmt '6 qseqid qstart qend sseqid sstart send length sstrand qcovhsp'|awk '$7>1000 {print}' |grep "plus" > ${dir2}/_tmp.blast2.out
-      if [ $(awk '{sum+=$9;}END{print sum}' ${dir2}/_tmp.blast2.out) -gt 95 ];then
-        mv ${dir2}/out_${k}.fa ${out}
-      fi
-  done
-  if [ ! -f ${out} ];then 
-    mv ${dir2}/out_1.fa ${out}
+  rm -r ${dir2}
+elif [[ -f ${dir}/Option_1_${prefix}.fasta ]] && [[ -f ${dir}/Option_2_${prefix}.fasta ]] && [[ ! -f ${dir}/Option_3_${prefix}.fasta ]];then 
+  opt1_len=$(cat ${dir}/Option_1_${prefix}.fasta |sed 1d|tr -d '\n'|wc -c)
+  opt2_len=$(cat ${dir}/Option_2_${prefix}.fasta |sed 1d|tr -d '\n'|wc -c)
+  if [ $opt1_len -eq $opt2_len ];then 
+    standardize "${dir}/Option_1_${prefix}.fasta" 1
+    standardize "${dir}/Option_2_${prefix}.fasta" 2
+    # get reference fasta
+    echo ">ref" > ${dir2}/ref.fa
+    awk '/ORIGIN/,/\/\//' ${gb} |grep -v "ORIGIN"|grep -v "\//"|tr -d "[0-9]"|tr -d ' '|tr -d '\n' >> ${dir2}/ref.fa 
+    ## Selecting option1 or option2 based on the reference
+    for k in 1 2; do
+      blastn -query ${dir2}/ref.fa -subject ${dir2}/out_${k}.fa -perc_identity 95 -evalue 0.1 -outfmt '6 qseqid qstart qend sseqid sstart send length sstrand qcovhsp'|awk '$7>1000 {print}' |grep "plus" > ${dir2}/_tmp.blast2.out
+        if [ $(awk '{sum+=$9;}END{print sum}' ${dir2}/_tmp.blast2.out) -gt 95 ];then
+          mv ${dir2}/out_${k}.fa ${out}
+        fi
+    done
+    if [ ! -f ${out} ];then 
+      mv ${dir2}/out_1.fa ${out}
+    fi 
+    rm -r ${dir2}
+  else 
+    echo "ERROR: Two options from NOVOPlasty are of different size"
+    exit 1
   fi 
-elif [ -f ${dir}/Option_1_${prefix}.fasta ];then 
+elif [ -f ${dir}/Option_1_${prefix}.fasta ] && [[ ! -f ${dir}/Option_3_${prefix}.fasta ]];then 
   standardize "${dir}/Option_1_${prefix}.fasta" 1
   mv ${dir2}/out_1.fa ${out}
-elif [ -f ${dir}/Option_2_${prefix}.fasta ];then 
+  rm -r ${dir2}
+elif [ -f ${dir}/Option_2_${prefix}.fasta ] && [[ ! -f ${dir}/Option_3_${prefix}.fasta ]];then 
   standardize "${dir}/Option_2_${prefix}.fasta" 2
   mv ${dir2}/out_2.fa ${out}
+  rm -r ${dir2}
 else 
-  echo "ERROR: NOVOPlasty could not return a complete circular assembly, assemble manually"
+  echo "ERROR: NOVOPlasty did not return a complete circular assembly or too many assemblies"
   exit 1
 fi 
 
-rm -r ${dir2}
 
 ## Check and correct non-ACTG characters in the assembly 
 echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tchecking for non-ATCG characters in the $prefix assembly"
