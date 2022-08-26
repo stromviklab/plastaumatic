@@ -61,7 +61,7 @@ snakemake
 ````
 Usage: plastaumatic -s seed.fa -g reference.gb -r <140000-160000> -f fof.txt -n NOVOPlasty4.3.1.pl
 
-options:</br>
+options:
          -s      Path to the seed file for assembly</br>
          -g      Path to the reference GenBank file</br>
          -r      Plastome assembly size range [140000-160000]</br>
