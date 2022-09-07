@@ -11,7 +11,7 @@ This repository includes a `snakefile` which uses `Snakemake` workflow manager t
 [**`fastp v0.23.0`**](https://github.com/OpenGene/fastp) </br>
 [**`NOVOPlasty v4.3.1`**](https://github.com/ndierckx/NOVOPlasty)  </br>
 **`Python v3.8`**  </br>
-**`BioPython` & `pandas`** (for [**`AnnoPlast`**](./scripts/AnnoPlast.py)) </br>
+**`BioPython v1.79` & `pandas v1.4.3`** (for [**`AnnoPlast`**](./scripts/AnnoPlast.py)) </br>
 [**`Blast+ v2.12.0`**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download) </br>
 [**`samtools v1.9`**](http://www.htslib.org/download/) </br>
 
