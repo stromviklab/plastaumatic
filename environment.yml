@@ -1,0 +1,14 @@
+name: plastaumatic
+channels:
+- bioconda
+- conda-forge
+- defaults
+dependencies:
+- python=3.8
+- blast=2.12.0
+- novoplasty=4.3.1
+- samtools=1.13
+- biopython=1.79
+- fastp=0.23.2
+- pandas=1.4.3
+- snakemake
