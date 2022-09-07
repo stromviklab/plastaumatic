@@ -7,12 +7,12 @@
 This repository includes a `snakefile` which uses `Snakemake` workflow manager to perform all the tasks. Also, a shell executable that does the same. 
 
 ### Pre-requisites:
-[**`Snakemake`**](https://snakemake.readthedocs.io/en/stable/tutorial/setup.html) [if using the `Snakemake` pipeline] </br>
-[**`fastp`**](https://github.com/OpenGene/fastp) </br>
-[**`NOVOPlasty`**](https://github.com/ndierckx/NOVOPlasty) </br>
+[**`Snakemake`**](https://snakemake.readthedocs.io/en/stable/tutorial/setup.html) [if using the `Snakemake` pipeline] (v5.10.0+) </br>
+[**`fastp`**](https://github.com/OpenGene/fastp) (v0.23.0) </br>
+[**`NOVOPlasty`**](https://github.com/ndierckx/NOVOPlasty) (v4.3.1) </br>
 **`BioPython` & `pandas`** (for [**`AnnoPlast`**](./scripts/AnnoPlast.py)) </br>
-[**`Blast+`**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download) </br>
-[**`samtools`**](http://www.htslib.org/download/) </br>
+[**`Blast+`**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download) (v2.13.0) </br>
+[**`samtools`**](http://www.htslib.org/download/) (v1.9) </br>
 
 
 ### installation
