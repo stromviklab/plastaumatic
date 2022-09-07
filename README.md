@@ -10,7 +10,7 @@ This repository includes a `snakefile` which uses `Snakemake` workflow manager t
 [**`Snakemake`**](https://snakemake.readthedocs.io/en/stable/tutorial/setup.html) [if using the `Snakemake` pipeline] </br>
 [**`fastp`**](https://github.com/OpenGene/fastp) </br>
 [**`NOVOPlasty`**](https://github.com/ndierckx/NOVOPlasty) </br>
-**`BioPython` & `pandas`** (for [**`AnnoPlast`**](https://github.com/SaiReddy-A/AnnoPlast)) </br>
+**`BioPython` & `pandas`** (for [**`AnnoPlast`**](./scripts/AnnoPlast.py)) </br>
 [**`Blast+`**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download) </br>
 [**`samtools`**](http://www.htslib.org/download/) </br>
 
