@@ -40,8 +40,9 @@ rule config:
         range=config['range']
     shell:
         """
+        readlen=$(head -4000 {params.prefix}/01-trim/{params.prefix}_1.fq|awk '{{if(NR%4==2) print length($1)}}' |sort |uniq -c|sort -k1 -nr|head -1|awk '{{print $2}}')
         cat {input.config} |sed "s|WORKDIR|{params.prefix}/02-assemble/|g"| sed "s|test|{params.prefix}|" |\
-            sed "s|path_to_seed|{params.seed}|" |sed "s|range|{params.range}|"|\
+            sed "s|path_to_seed|{params.seed}|" |sed "s|range|{params.range}|"|sed "s|ReadLen|$readlen|"|\
             sed "s|read1|{input.trim_f}|" | sed "s|read2|{input.trim_r}|" > {output}
         """
 rule assemble:
