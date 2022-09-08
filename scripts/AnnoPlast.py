@@ -55,6 +55,9 @@ def run_blast(p_ident):
     if min(smallest_ftr) > 10:
         blast_cmd = NcbiblastnCommandline(task="blastn", query=args.out.absolute()/"ref_features.fa", subject=args.fasta.absolute(), \
             perc_identity=p_ident, max_hsps=5, max_target_seqs=5, evalue=100, out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
+    elif min(smallest_ftr) < 4:
+        blast_cmd = NcbiblastnCommandline(task="blastn", query=args.out.absolute()/"ref_features.fa", subject=args.fasta.absolute(), \
+            perc_identity=p_ident, max_hsps=50, max_target_seqs=5, evalue=1000, word_size=4, out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
     else:
         blast_cmd = NcbiblastnCommandline(task="blastn", query=args.out.absolute()/"ref_features.fa", subject=args.fasta.absolute(), \
             perc_identity=p_ident, max_hsps=50, max_target_seqs=5, evalue=1000, word_size=min(smallest_ftr), out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
@@ -151,19 +154,19 @@ def run_blast(p_ident):
 ## round 1 - percent identity of 95 
 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Running round-1 blastn searches", sep='\t')
 final_gene_map=run_blast(95)
-if len(ftr_ids) == len(final_gene_map):
+if len(ftr_ids) <= len(final_gene_map):
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Found all the features from the reference", sep='\t')    
 else:
     ## round 2 - percent identity of 90 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Running round-2 blastn searches", sep='\t')
     final_gene_map=run_blast(90)
-    if len(ftr_ids) == len(final_gene_map):
+    if len(ftr_ids) <= len(final_gene_map):
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Found all the features from the reference", sep='\t')    
     else:
         ## round 3 - percent identity of 85
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Running round-3 blastn searches", sep='\t')
         final_gene_map=run_blast(85)
-        if len(ftr_ids) == len(final_gene_map):
+        if len(ftr_ids) <= len(final_gene_map):
             print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"Found all the features from the reference", sep='\t') 
         else:
             print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"WARNING: some features are missing, use a different reference genbank file or annotate manually", sep='\t') 
