@@ -34,6 +34,7 @@ my_gb=SeqIO.read(args.genbank,"genbank")
 ftr_types="gene CDS intron exon rRNA tRNA"
 smallest_ftr=[]
 ftr_ids=[]
+split_ftr=[]
 for feature in my_gb.features[1:]:
     if any(ftr_type == feature.type for ftr_type in ftr_types.split()):
         for part in feature.location.parts:
@@ -47,6 +48,15 @@ for feature in my_gb.features[1:]:
                 print(part.extract(my_gb.seq), file=ref_seqs)
                 smallest_ftr.append(part.nofuzzy_end-part.nofuzzy_start)
                 ftr_ids.append("id_"+feature.type+"_"+str(part.nofuzzy_start)+"_"+str(part.nofuzzy_end))
+    if feature.location.start == 0 and feature.location.end == len(my_gb.seq):
+        for part in feature.location.parts:
+            tmp_lst=[]
+            tmp_lst.append((feature.qualifiers["gene"])[0])
+            tmp_lst.append(feature.type)
+            tmp_lst.append(part.nofuzzy_start)
+            tmp_lst.append(part.nofuzzy_end)
+            split_ftr.append(tmp_lst)
+df_split=pd.DataFrame(split_ftr,columns=['ref','type','r_start','r_end'])
 ref_seqs.close()
 ftr_ids=set(ftr_ids)
 
@@ -57,7 +67,7 @@ def run_blast(p_ident):
             perc_identity=p_ident, max_hsps=5, max_target_seqs=5, evalue=100, out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
     elif min(smallest_ftr) < 4:
         blast_cmd = NcbiblastnCommandline(task="blastn", query=args.out.absolute()/"ref_features.fa", subject=args.fasta.absolute(), \
-            perc_identity=p_ident, max_hsps=50, max_target_seqs=5, evalue=1000, word_size=4, out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
+            perc_identity=p_ident, max_hsps=50, max_target_seqs=5, evalue=1000, word_size=sorted(set(smallest_ftr))[1], out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
     else:
         blast_cmd = NcbiblastnCommandline(task="blastn", query=args.out.absolute()/"ref_features.fa", subject=args.fasta.absolute(), \
             perc_identity=p_ident, max_hsps=50, max_target_seqs=5, evalue=1000, word_size=min(smallest_ftr), out=args.out.absolute()/"blast.anno.out", outfmt="6 qseqid qstart qend sseqid sstart send length pident sstrand qcovhsp")
@@ -143,8 +153,35 @@ def run_blast(p_ident):
         map2.columns=cols 
         gene_map2=pd.concat([dup2_gene_final_df,map2])
 
-        ### concatenate all the mappings
-        final_gene_map=pd.concat([gene_map1,gene_map2])
+        ### concatenate map1 and map2
+        gene_map3=pd.concat([gene_map1,gene_map2])
+
+        ## manually annotate any split features that are less than blastn word size 
+        tmp3=pd.merge(df_split, gene_map3, left_on=['ref','type','r_start','r_end'], right_on=['ref','type','r_start','r_end'], how='left')    
+        if len(tmp3.loc[tmp3.q_start.isnull()]) > 1:
+            list1=tmp3.loc[tmp3.q_start.isnull()]
+            list2=pd.merge(df_split, gene_map3, left_on=['ref','type','r_start','r_end'], right_on=['ref','type','r_start','r_end'], how='left').dropna()
+            tmp4=pd.merge(list1, list2, on=['ref','type'], how='inner',suffixes=(None,"_y"))
+            new_split=[]
+            ind2=0
+            for ind, row in tmp4.iterrows():
+                if row['r_end'] == len(my_gb.seq):                  
+                    if row['q_start_y'] == 1:
+                        new_split.append(row[0:7])
+                        new_split[ind2][4]=int(len(my_gb.seq)-(row['r_end']-row['r_start']))
+                        new_split[ind2][5]=len(my_gb.seq)
+                        new_split[ind2][6]=row['strand_y']
+                        ind2+=1
+                    else:
+                        new_split.append(row[0:7])
+                        new_split[ind2][4]=int(row['q_start_y']-(row['r_end']-row['r_start']))
+                        new_split[ind2][5]=int(row['q_start_y']-1)
+                        new_split[ind2][6]=row['strand_y']
+                        ind2+=1                
+            tmp_f=pd.DataFrame(new_split)
+            final_gene_map=pd.concat([gene_map3,tmp_f])
+        else:
+            final_gene_map=gene_map3
     else:
         final_gene_map=gene_map1
     final_gene_map['q_start'] -= 1
