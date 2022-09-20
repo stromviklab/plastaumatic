@@ -135,6 +135,14 @@ def run_blast(p_ident):
                         dup2_gene_final.append(row2[0:4]+row2[7:10])
                     else:
                         dup2_gene_final.append(row2[0:7])
+            elif tmp_merged['ref'].str.contains('fragment',case=False).bool():
+                tmp_merged=tmp_merged['ref'].str.split("-",expand=True).join(tmp_merged)
+                tmp_nocds=pd.merge(tmp_merged, gene_map1.loc[gene_map1['type']=='gene'], left_on=[0], right_on=['ref'],how='inner')
+                row2=tmp_nocds.loc[0].tolist()
+                if (~(tmp_nocds.q_start_x >= tmp_nocds.q_start) & (tmp_nocds.q_end_x <= tmp_nocds.q_end)).bool():
+                    dup2_gene_final.append(row2[2:9])
+                else:
+                    dup2_gene_final.append(row2[2:6]+row2[9:12])
             else:
                 tmp_nocds=pd.merge(tmp_merged, gene_map1.loc[gene_map1['type']=='gene'], on=['ref'], how='inner')
                 row2=tmp_nocds.loc[0].tolist()
@@ -168,13 +176,13 @@ def run_blast(p_ident):
                 if row['r_end'] == len(my_gb.seq):                  
                     if row['q_start_y'] == 1:
                         new_split.append(row[0:7])
-                        new_split[ind2][4]=int(len(my_gb.seq)-(row['r_end']-row['r_start']))
+                        new_split[ind2][4]=int(len(my_gb.seq)-(row['r_end']-row['r_start'])+1)
                         new_split[ind2][5]=len(my_gb.seq)
                         new_split[ind2][6]=row['strand_y']
                         ind2+=1
                     else:
                         new_split.append(row[0:7])
-                        new_split[ind2][4]=int(row['q_start_y']-(row['r_end']-row['r_start']))
+                        new_split[ind2][4]=int(row['q_start_y']-(row['r_end']-row['r_start'])+1)
                         new_split[ind2][5]=int(row['q_start_y']-1)
                         new_split[ind2][6]=row['strand_y']
                         ind2+=1                
