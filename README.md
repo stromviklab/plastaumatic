@@ -1,5 +1,5 @@
 # Plastaumatic: An automated pipeline to assemble and annotate plastome sequences. 
-![](./pipeline.png)
+![](./pipeline.pdf)
 
 ## Introduction
 **`plastaumatic`** is an automated pipeline developed for both assembly and annotation of plastomes, with the scope of the researcher being able to load whole genome sequence data with minimal manual input, and therefore a faster runtime. The main structure of the current automated pipeline includes trimming of adaptor and low-quality sequences using `fastp`, *de novo* plastome assembly using `NOVOPlasty`, standardization and quality checking of the assembled genomes through a custom script utilizing `BLAST+` and `SAMtools`, annotation of the assembled genomes using `AnnoPlast`, and finally generating required files for NCBI GenBank submissions.
