@@ -1,4 +1,4 @@
-# [Plastaumatic: An automated pipeline to assemble and annotate plastome sequences](https://doi.org/10.3389/fpls.2022.10119) 
+# [Plastaumatic: An automated pipeline to assemble and annotate plastome sequences](https://doi.org/10.3389/fpls.2022.1011948) 
 ![](./pipeline.png)
 
 ## Introduction
