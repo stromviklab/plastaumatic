@@ -1,4 +1,4 @@
-# Plastaumatic: An automated pipeline to assemble and annotate plastome sequences. 
+# Plastaumatic: An automated pipeline to assemble and annotate plastome sequences [doi:10.3389/fpls.2022.10119](https://doi.org/10.3389/fpls.2022.10119) 
 ![](./pipeline.png)
 
 ## Introduction
@@ -108,6 +108,9 @@ prefix
 
 
 ### Citations
+Chen W, Achakkagari SR and Strömvik M (2022) Plastaumatic: Automating plastome assembly and annotation. Front. Plant Sci. 13:1011948. doi: 10.3389/fpls.2022.1011948
+
+
 Since `plastaumatic` uses multiple software in its pipeline, publishing the results obtained form `plastaumtic` should also cite the following sources
 
 > 1. Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
