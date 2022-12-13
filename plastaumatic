@@ -100,7 +100,7 @@ for line in `cat $fof`;do
 
 	## Standardizes the assembly
 	if [ ! -f ${prefix}/03-standardize/standardization.done ];then 
-		${repo}/scripts/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -g ${ref_gb} -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix}
+		${repo}/scripts/standardize_cpDNA.sh -d ${prefix}/02-assemble/ -g ${ref_gb} -o ${prefix}/03-standardize/${prefix}.plastome.fa -p ${prefix} &> ${prefix}/00-logs/03-standardize.log
 		touch ${prefix}/03-standardize/standardization.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tstandardization was already done ... skipping"
@@ -109,7 +109,7 @@ for line in `cat $fof`;do
 	## Annotation of the assembly
 	if [ ! -f ${prefix}/04-annotate/annotation.done ];then 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotating the assembly"
-		python3 ${repo}/scripts/AnnoPlast.py -f ${prefix}/03-standardize/${prefix}.plastome.fa -g ${ref_gb} -o ${prefix}/04-annotate -p ${prefix}
+		python3 ${repo}/scripts/AnnoPlast.py -f ${prefix}/03-standardize/${prefix}.plastome.fa -g ${ref_gb} -o ${prefix}/04-annotate -p ${prefix} &> ${prefix}/00-logs/04-annotate.log
 		touch ${prefix}/04-annotate/annotation.done
 	else 
 		echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tannotation was already done ... skipping"
