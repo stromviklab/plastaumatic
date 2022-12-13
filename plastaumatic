@@ -86,8 +86,9 @@ for line in `cat $fof`;do
 		read1_novo=${prefix}/01-trim/${prefix}_1.fq
 		read2_novo=${prefix}/01-trim/${prefix}_2.fq
 
+		readlen=$(head -4000 $read1_novo|awk '{{if(NR%4==2) print length($1)}}' |sort |uniq -c|sort -k1 -nr|head -1|awk '{{print $2}}')
 		cat ${repo}/scripts/config_novo.txt |sed "s|WORKDIR|${prefix}/02-assemble/|g"| sed "s|test|$prefix|" | \
-		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|\
+		sed "s|path_to_seed|${seed}|" |sed "s|range|$range|"|sed "s|ReadLen|$readlen|"|\
 		sed "s|read1|$read1_novo|" | sed "s|read2|$read2_novo|" > ${prefix}/${prefix}_config.txt
 
 		perl ${novo} -c ${prefix}/${prefix}_config.txt &> ${prefix}/00-logs/02-assemble.log
