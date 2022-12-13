@@ -31,7 +31,7 @@ standardize() {
   ## self match is removed and sorted by alignment length
   ## species with no second copy of IR will not be standardized 
   ## The IR regions are detected for the ones with both copies and corrected
-  blastn -query ${fasta} -subject ${fasta} -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident'|awk '$2!=$5&&$3!=$6 {print}'|sort  -k7,7nr -k2,2n  > ${dir2}/_tmp.blast.out
+  blastn -task blastn -query ${fasta} -subject ${fasta} -perc_identity 99 -evalue 0.00001 -outfmt '6 qseqid qstart qend sseqid sstart send length pident'|awk '$2!=$5&&$3!=$6 {print}'|sort  -k7,7nr -k2,2n  > ${dir2}/_tmp.blast.out
   if [[ $(awk '{print $7}' ${dir2}/_tmp.blast.out|head -1) -le 10000 ]] && [[ $seq_len -le 150000 ]];then 
     echo -e "$(date +'%Y-%m-%d %H:%M:%S')\tThe plastome does not have an inverted repeat"
     cat ${fasta} |sed ':a; $!N; /^>/!s/\n\([^>]\)/\1/; ta; P; D'| sed "s/^>.*$/>${prefix}/" > ${dir2}/out_${option}.fa
